@@ -110,7 +110,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>ro.apiticas.runner.gui.MainUI</mainClass>
+                            <mainClass>ro.apiticas.runner.gui.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

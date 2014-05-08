@@ -5,7 +5,7 @@ import ro.apiticas.runner.gui.listeners.ListenersWrapper;
 import ro.apiticas.runner.gui.utils.GuiUtils;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -17,13 +17,25 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MainUI {
+import static ro.apiticas.runner.gui.UIComponent.CONNECTION_STATUS_LABEL;
+import static ro.apiticas.runner.gui.UIComponent.CONNECT_BUTTON;
+import static ro.apiticas.runner.gui.UIComponent.DISCONNECT_BUTTON;
+import static ro.apiticas.runner.gui.UIComponent.DOCUMENT_SOURCE;
+import static ro.apiticas.runner.gui.UIComponent.HOSTNAME_FIELD;
+import static ro.apiticas.runner.gui.UIComponent.MAIN_PANEL;
+import static ro.apiticas.runner.gui.UIComponent.PASSWORD_FIELD;
+import static ro.apiticas.runner.gui.UIComponent.SERVERS_LIST;
+import static ro.apiticas.runner.gui.UIComponent.SHELL_AREA;
+import static ro.apiticas.runner.gui.UIComponent.TABBED_PANEL;
+import static ro.apiticas.runner.gui.UIComponent.USERNAME_FIELD;
 
-    public static final String DOCUMENT_SOURCE = "source";
+public class RunnerUI {
 
-    private JPanel mainPanel;
+    protected JPanel mainPanel;
 
     private JPanel leftPanel;
     private JScrollPane serversListScrollPane;
@@ -33,7 +45,7 @@ public class MainUI {
     private JButton editButton;
 
     private JPanel rightPanel;
-    private JTabbedPane tabbedPane1;
+    private JTabbedPane tabbedPanel;
     private JPanel connectionPanel;
     private JPanel credentialsPanel;
     private JTextField hostnameField;
@@ -48,10 +60,9 @@ public class MainUI {
     private JPanel outputPanel;
     private JScrollPane shellAreaScrollPane;
 
-    private ListenersWrapper listenersWrapper;
     private List<ServerData> servers;
 
-    public MainUI() {
+    public RunnerUI() {
         createUIComponents();
     }
 
@@ -59,23 +70,19 @@ public class MainUI {
 
         servers = new ArrayList<ServerData>();
 
-        serversList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        serversList.setListData(GuiUtils.getServersNames(servers));
+        Map<UIComponent, JComponent> uiComponents = new HashMap<>();
+        uiComponents.put(MAIN_PANEL, mainPanel);
+        uiComponents.put(SERVERS_LIST, serversList);
+        uiComponents.put(TABBED_PANEL, tabbedPanel);
+        uiComponents.put(HOSTNAME_FIELD, hostnameField);
+        uiComponents.put(USERNAME_FIELD, usernameField);
+        uiComponents.put(PASSWORD_FIELD, passwordField);
+        uiComponents.put(CONNECT_BUTTON, connectButton);
+        uiComponents.put(DISCONNECT_BUTTON, disconnectButton);
+        uiComponents.put(CONNECTION_STATUS_LABEL, connectionStatusLabel);
+        uiComponents.put(SHELL_AREA, shellArea);
 
-        tabbedPane1.setVisible(false);
-
-        listenersWrapper = new ListenersWrapper();
-        listenersWrapper.setMainPanel(mainPanel);
-        listenersWrapper.setServersList(serversList);
-        listenersWrapper.setTabbedPane1(tabbedPane1);
-        listenersWrapper.setHostnameField(hostnameField);
-        listenersWrapper.setUsernameField(usernameField);
-        listenersWrapper.setPasswordField(passwordField);
-        listenersWrapper.setConnectButton(connectButton);
-        listenersWrapper.setDisconnectButton(disconnectButton);
-        listenersWrapper.setConnectionStatusLabel(connectionStatusLabel);
-        listenersWrapper.setShellArea(shellArea);
-        listenersWrapper.setServers(servers);
+        ListenersWrapper listenersWrapper = new ListenersWrapper(uiComponents, servers);
 
         addButton.addActionListener(listenersWrapper.new AddServerButtonActionListener());
         removeButton.addActionListener(listenersWrapper.new RemoveServerButtonActionListener());
@@ -83,27 +90,21 @@ public class MainUI {
         serversList.addListSelectionListener(listenersWrapper.new ServersListSelectionListener());
         connectButton.addActionListener(listenersWrapper.new ConnectButtonActionListener());
         disconnectButton.addActionListener(listenersWrapper.new DisconnectButtonActionListener());
-
         DocumentListener documentListener = listenersWrapper.new InputFieldsDocumentListener();
 
         hostnameField.getDocument().putProperty(DOCUMENT_SOURCE, hostnameField);
-        usernameField.getDocument().putProperty(DOCUMENT_SOURCE, usernameField);
-        passwordField.getDocument().putProperty(DOCUMENT_SOURCE, passwordField);
-
         hostnameField.getDocument().addDocumentListener(documentListener);
+        usernameField.getDocument().putProperty(DOCUMENT_SOURCE, usernameField);
         usernameField.getDocument().addDocumentListener(documentListener);
+        passwordField.getDocument().putProperty(DOCUMENT_SOURCE, passwordField);
         passwordField.getDocument().addDocumentListener(documentListener);
 
+        serversList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        serversList.setListData(GuiUtils.getServersNames(servers));
+
+        tabbedPanel.setVisible(false);
         shellArea.setEditable(false);
         disconnectButton.setEnabled(false);
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("MainUI");
-        frame.setContentPane(new MainUI().mainPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
-        frame.pack();
-        frame.setVisible(true);
-    }
 }

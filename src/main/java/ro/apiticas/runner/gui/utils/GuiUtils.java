@@ -90,7 +90,8 @@ public class GuiUtils {
     public static List<String> textToShellLines(String text) {
         checkNotNull(text, "Shell text is null");
 
-        String[] lines = text.split("\n");
+        String[] lines = text.split(System.getProperty("line.separator"));
+
         return Arrays.asList(lines);
     }
 }
