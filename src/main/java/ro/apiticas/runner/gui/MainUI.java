@@ -4,19 +4,24 @@ import ro.apiticas.runner.gui.data.ServerData;
 import ro.apiticas.runner.gui.listeners.ListenersWrapper;
 import ro.apiticas.runner.gui.utils.GuiUtils;
 
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class MainUI {
+
+    public static final String DOCUMENT_SOURCE = "source";
 
     private JPanel mainPanel;
 
@@ -62,72 +67,28 @@ public class MainUI {
         listenersWrapper = new ListenersWrapper();
         listenersWrapper.setMainPanel(mainPanel);
         listenersWrapper.setServersList(serversList);
+        listenersWrapper.setTabbedPane1(tabbedPane1);
+        listenersWrapper.setHostnameField(hostnameField);
+        listenersWrapper.setUsernameField(usernameField);
+        listenersWrapper.setPasswordField(passwordField);
+        listenersWrapper.setConnectButton(connectButton);
+        listenersWrapper.setDisconnectButton(disconnectButton);
+        listenersWrapper.setConnectionStatusLabel(connectionStatusLabel);
+        listenersWrapper.setShellArea(shellArea);
         listenersWrapper.setServers(servers);
 
         addButton.addActionListener(listenersWrapper.new AddServerButtonActionListener());
         removeButton.addActionListener(listenersWrapper.new RemoveServerButtonActionListener());
         editButton.addActionListener(listenersWrapper.new EditServerButtonActionListener());
+        serversList.addListSelectionListener(listenersWrapper.new ServersListSelectionListener());
+        connectButton.addActionListener(listenersWrapper.new ConnectButtonActionListener());
+        disconnectButton.addActionListener(listenersWrapper.new DisconnectButtonActionListener());
 
-        serversList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent event) {
-                String serverName = (String) serversList.getSelectedValue();
-                if (serverName == null) {
-                    return;
-                }
+        DocumentListener documentListener = listenersWrapper.new InputFieldsDocumentListener();
 
-                tabbedPane1.setVisible(true);
-                ServerData server = GuiUtils.getServerByName(servers, serverName);
-
-                hostnameField.setText(server.getHostname());
-                usernameField.setText(server.getUsername());
-                passwordField.setText(server.getPassword());
-                shellArea.setText(GuiUtils.shellLinesToText(server.getShellLines()));
-                connectButton.setEnabled(!server.getShell().isConnected());
-                disconnectButton.setEnabled(server.getShell().isConnected());
-                connectionStatusLabel.setText(server.getShell().isConnected() ? "Connected" : "Disconnected");
-            }
-        });
-
-        connectButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
-
-                selectedServer.getShell().connect(
-                        selectedServer.getHostname(), selectedServer.getUsername(), selectedServer.getPassword(),
-                        shellArea
-                );
-
-                selectedServer.setShellLines(GuiUtils.textToShellLines(shellArea.getText()));
-
-                connectButton.setEnabled(!selectedServer.getShell().isConnected());
-                disconnectButton.setEnabled(selectedServer.getShell().isConnected());
-                connectionStatusLabel.setText(selectedServer.getShell().isConnected() ? "Connected" : "Disconnected");
-
-                GuiUtils.updateServer(servers, selectedServer);
-            }
-        });
-
-        disconnectButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
-
-                selectedServer.getShell().disconnect();
-
-                connectButton.setEnabled(!selectedServer.getShell().isConnected());
-                disconnectButton.setEnabled(selectedServer.getShell().isConnected());
-                connectionStatusLabel.setText(selectedServer.getShell().isConnected() ? "Connected" : "Disconnected");
-
-                GuiUtils.updateServer(servers, selectedServer);
-            }
-        });
-
-        DocumentListener documentListener = new InputFieldsDocumentListener();
-
-        hostnameField.getDocument().putProperty("source", hostnameField);
-        usernameField.getDocument().putProperty("source", usernameField);
-        passwordField.getDocument().putProperty("source", passwordField);
+        hostnameField.getDocument().putProperty(DOCUMENT_SOURCE, hostnameField);
+        usernameField.getDocument().putProperty(DOCUMENT_SOURCE, usernameField);
+        passwordField.getDocument().putProperty(DOCUMENT_SOURCE, passwordField);
 
         hostnameField.getDocument().addDocumentListener(documentListener);
         usernameField.getDocument().addDocumentListener(documentListener);
@@ -135,40 +96,6 @@ public class MainUI {
 
         shellArea.setEditable(false);
         disconnectButton.setEnabled(false);
-    }
-
-    class InputFieldsDocumentListener implements DocumentListener {
-
-        @Override
-        public void insertUpdate(DocumentEvent documentEvent) {
-            updateModel(documentEvent);
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent documentEvent) {
-            updateModel(documentEvent);
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent documentEvent) {
-        }
-
-        private void updateModel(DocumentEvent documentEvent) {
-            checkNotNull(documentEvent, "Document event is null");
-
-            JTextField textField = (JTextField) documentEvent.getDocument().getProperty("source");
-            ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
-            String newValue = textField.getText();
-
-            if (textField.equals(hostnameField)) {
-                selectedServer.setHostname(newValue);
-            } else if (textField.equals(usernameField)) {
-                selectedServer.setUsername(newValue);
-            } else if (textField.equals(passwordField)) {
-                selectedServer.setPassword(newValue);
-            }
-            GuiUtils.updateServer(servers, selectedServer);
-        }
     }
 
     public static void main(String[] args) {
