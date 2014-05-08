@@ -1,6 +1,7 @@
 package ro.apiticas.runner.gui.data;
 
 import com.google.common.base.Objects;
+import ro.apiticas.runner.ssh.Shell;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ public class ServerData {
     private List<String> shellLines;
     private List<String> commands;
 
-    private boolean connectionStatus;
+    private Shell shell;
 
     public ServerData(String name) {
         this.name = checkNotNull(name, "Server name is null");
@@ -30,7 +31,7 @@ public class ServerData {
         shellLines = new ArrayList<String>();
         commands = new ArrayList<String>();
 
-        connectionStatus = false;
+        shell = new Shell();
     }
 
     public String getName() {
@@ -81,12 +82,12 @@ public class ServerData {
         this.commands = commands;
     }
 
-    public boolean connectionStatus() {
-        return connectionStatus;
+    public Shell getShell() {
+        return shell;
     }
 
-    public void setConnectionStatus(boolean connectionStatus) {
-        this.connectionStatus = connectionStatus;
+    public void setShell(Shell shell) {
+        this.shell = shell;
     }
 
     @Override

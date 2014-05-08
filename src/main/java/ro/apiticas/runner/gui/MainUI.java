@@ -1,31 +1,17 @@
 package ro.apiticas.runner.gui;
 
-import com.jcraft.jsch.Channel;
 import ro.apiticas.runner.gui.data.ServerData;
-import ro.apiticas.runner.ssh.JTextAreaOutputStream;
-import ro.apiticas.runner.ssh.Shell;
+import ro.apiticas.runner.gui.listeners.ListenersWrapper;
+import ro.apiticas.runner.gui.utils.GuiUtils;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -57,9 +43,8 @@ public class MainUI {
     private JPanel outputPanel;
     private JScrollPane shellAreaScrollPane;
 
+    private ListenersWrapper listenersWrapper;
     private List<ServerData> servers;
-
-    private Channel channel = null;
 
     public MainUI() {
         createUIComponents();
@@ -69,88 +54,19 @@ public class MainUI {
 
         servers = new ArrayList<ServerData>();
 
-        // Test data
-        ServerData firstServer = new ServerData("First");
-        firstServer.setHostname("localhost");
-        firstServer.setUsername("alexandru");
-        firstServer.setPassword("password");
-        servers.add(firstServer);
-        servers.add(new ServerData("Second"));
+        serversList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        serversList.setListData(GuiUtils.getServersNames(servers));
 
         tabbedPane1.setVisible(false);
 
-        serversList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        serversList.setListData(getServersNames(servers));
+        listenersWrapper = new ListenersWrapper();
+        listenersWrapper.setMainPanel(mainPanel);
+        listenersWrapper.setServersList(serversList);
+        listenersWrapper.setServers(servers);
 
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String newServerName = (String) JOptionPane.showInputDialog(mainPanel, "Set the name of the new server", "New server",
-                        JOptionPane.QUESTION_MESSAGE, null, null, "New server " + servers.size());
-
-                if (newServerName == null || newServerName.trim().isEmpty()) {
-                    return;
-                }
-
-                if (serverNameExists(servers, newServerName)) {
-                    JOptionPane.showMessageDialog(mainPanel, "A server with the same name already exists",
-                            "Server name exists", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                serversList.setListData(getServersNames(addNewServer(servers, newServerName)));
-                serversList.setSelectedValue(newServerName, true);
-            }
-        });
-
-        removeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String serverToDelete = (String) serversList.getSelectedValue();
-
-                if (serverToDelete == null) {
-                    return;
-                }
-
-                int reallyDelete = JOptionPane.showConfirmDialog(mainPanel,
-                        "Really delete server '" + serverToDelete + "'?", "Confirm delete",
-                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-
-                if (reallyDelete != 0) {
-                    return;
-                }
-
-                serversList.setListData(getServersNames(removeServer(servers, serverToDelete)));
-                serversList.setSelectedValue(servers.get(servers.size() - 1).getName(), true);
-            }
-        });
-
-        editButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String serverToEdit = (String) serversList.getSelectedValue();
-
-                if (serverToEdit == null) {
-                    return;
-                }
-
-                String updatedServerName = (String) JOptionPane.showInputDialog(mainPanel,
-                        "Set the new name of the server", "Rename server",
-                        JOptionPane.QUESTION_MESSAGE, null, null, serverToEdit);
-
-                if (updatedServerName == null || updatedServerName.trim().isEmpty()) {
-                    return;
-                }
-
-                if (serverNameExists(servers, updatedServerName)) {
-                    JOptionPane.showMessageDialog(mainPanel, "A server with the same name already exists",
-                            "Server name exists", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                serversList.setListData(getServersNames(renameServer(servers, serverToEdit, updatedServerName)));
-            }
-        });
+        addButton.addActionListener(listenersWrapper.new AddServerButtonActionListener());
+        removeButton.addActionListener(listenersWrapper.new RemoveServerButtonActionListener());
+        editButton.addActionListener(listenersWrapper.new EditServerButtonActionListener());
 
         serversList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent event) {
@@ -160,66 +76,50 @@ public class MainUI {
                 }
 
                 tabbedPane1.setVisible(true);
-                ServerData server = getServerByName(servers, serverName);
+                ServerData server = GuiUtils.getServerByName(servers, serverName);
 
                 hostnameField.setText(server.getHostname());
                 usernameField.setText(server.getUsername());
                 passwordField.setText(server.getPassword());
-                shellArea.setText(shellLinesToText(server.getShellLines()));
-                connectButton.setEnabled(!server.connectionStatus());
-                disconnectButton.setEnabled(server.connectionStatus());
-                connectionStatusLabel.setText(server.connectionStatus() ? "Connected" : "Disconnected");
+                shellArea.setText(GuiUtils.shellLinesToText(server.getShellLines()));
+                connectButton.setEnabled(!server.getShell().isConnected());
+                disconnectButton.setEnabled(server.getShell().isConnected());
+                connectionStatusLabel.setText(server.getShell().isConnected() ? "Connected" : "Disconnected");
             }
         });
 
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ServerData selectedServer = getServerByName(servers, (String) serversList.getSelectedValue());
+                ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
 
-                channel = new Shell().connect(selectedServer.getHostname(), selectedServer.getUsername(),
-                        selectedServer.getPassword(), shellArea);
+                selectedServer.getShell().connect(
+                        selectedServer.getHostname(), selectedServer.getUsername(), selectedServer.getPassword(),
+                        shellArea
+                );
 
-                selectedServer.setShellLines(textToShellLines(shellArea.getText()));
+                selectedServer.setShellLines(GuiUtils.textToShellLines(shellArea.getText()));
 
-                if (channel != null && channel.isConnected()) {
-                    connectionStatusLabel.setText("Connected");
-                    connectButton.setEnabled(false);
-                    disconnectButton.setEnabled(true);
-                    selectedServer.setConnectionStatus(true);
-                } else {
-                    connectionStatusLabel.setText("Disconnected");
-                    selectedServer.setConnectionStatus(false);
-                }
+                connectButton.setEnabled(!selectedServer.getShell().isConnected());
+                disconnectButton.setEnabled(selectedServer.getShell().isConnected());
+                connectionStatusLabel.setText(selectedServer.getShell().isConnected() ? "Connected" : "Disconnected");
 
-                updateServer(servers, selectedServer);
+                GuiUtils.updateServer(servers, selectedServer);
             }
         });
 
         disconnectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ServerData selectedServer = getServerByName(servers, (String) serversList.getSelectedValue());
+                ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
 
-                if (channel == null) {
-                    return;
-                }
+                selectedServer.getShell().disconnect();
 
-                try {
-                    channel.disconnect();
-                    channel.getSession().disconnect();
-                } catch (Exception e) {
-                    e.printStackTrace(new PrintWriter(new JTextAreaOutputStream(shellArea), true));
-                }
+                connectButton.setEnabled(!selectedServer.getShell().isConnected());
+                disconnectButton.setEnabled(selectedServer.getShell().isConnected());
+                connectionStatusLabel.setText(selectedServer.getShell().isConnected() ? "Connected" : "Disconnected");
 
-                selectedServer.setShellLines(textToShellLines(shellArea.getText()));
-
-                connectionStatusLabel.setText("Disconnected");
-                connectButton.setEnabled(true);
-                disconnectButton.setEnabled(false);
-                selectedServer.setConnectionStatus(true);
-
-                updateServer(servers, selectedServer);
+                GuiUtils.updateServer(servers, selectedServer);
             }
         });
 
@@ -257,7 +157,7 @@ public class MainUI {
             checkNotNull(documentEvent, "Document event is null");
 
             JTextField textField = (JTextField) documentEvent.getDocument().getProperty("source");
-            ServerData selectedServer = getServerByName(servers, (String) serversList.getSelectedValue());
+            ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
             String newValue = textField.getText();
 
             if (textField.equals(hostnameField)) {
@@ -267,93 +167,8 @@ public class MainUI {
             } else if (textField.equals(passwordField)) {
                 selectedServer.setPassword(newValue);
             }
-            updateServer(servers, selectedServer);
+            GuiUtils.updateServer(servers, selectedServer);
         }
-    }
-
-    private String[] getServersNames(List<ServerData> servers) {
-        checkNotNull(servers, "Servers list is null");
-
-        String[] serversNames = new String[servers.size()];
-        for (int i = 0; i < servers.size(); i++) {
-            serversNames[i] = servers.get(i).getName();
-        }
-
-        return serversNames;
-    }
-
-    private ServerData getServerByName(List<ServerData> servers, String serverName) {
-        checkNotNull(servers, "Servers list is null");
-        checkNotNull(serverName, "Server name is null");
-
-        ServerData serverData = null;
-
-        for (ServerData server : servers) {
-            if (server.getName().equals(serverName)) {
-                serverData = server;
-                break;
-            }
-        }
-
-        return serverData;
-    }
-
-    private boolean serverNameExists(List<ServerData> servers, String serverName) {
-        checkNotNull(servers, "Servers list is null");
-        checkNotNull(serverName, "Server name is null");
-
-        return getServerByName(servers, serverName) != null;
-    }
-
-    private List<ServerData> addNewServer(List<ServerData> servers, String serverName) {
-        checkNotNull(servers, "Servers list is null");
-        checkNotNull(serverName, "Server name is null");
-
-        servers.add(new ServerData(serverName));
-        return servers;
-    }
-
-    private List<ServerData> removeServer(List<ServerData> servers, String serverName) {
-        checkNotNull(servers, "Servers list is null");
-        checkNotNull(serverName, "Server name is null");
-
-        servers.remove(getServerByName(servers, serverName));
-        return servers;
-    }
-
-    private List<ServerData> renameServer(List<ServerData> servers, String oldServerName, String newServerName) {
-        checkNotNull(servers, "Servers list is null");
-        checkNotNull(oldServerName, "Old server name is null");
-        checkNotNull(newServerName, "New server name is null");
-
-        servers.get(servers.indexOf(getServerByName(servers, oldServerName))).setName(newServerName);
-        return servers;
-    }
-
-    private List<ServerData> updateServer(List<ServerData> servers, ServerData serverData) {
-        checkNotNull(servers, "Servers list is null");
-        checkNotNull(serverData, "Server data is null");
-
-        servers.set(servers.indexOf(getServerByName(servers, serverData.getName())), serverData);
-        return servers;
-    }
-
-    private String shellLinesToText(List<String> lines) {
-        checkNotNull(lines, "Shell lines list is null");
-
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String line : lines) {
-            stringBuilder.append(line + "\n");
-        }
-
-        return stringBuilder.toString();
-    }
-
-    private List<String> textToShellLines(String text) {
-        checkNotNull(text, "Shell text is null");
-
-        String[] lines = text.split("\n");
-        return Arrays.asList(lines);
     }
 
     public static void main(String[] args) {

@@ -1,0 +1,20 @@
+package ro.apiticas.runner.gui;
+
+public enum UIComponent {
+    MAIN_PANEL,
+
+    LEFT_PANEL,
+    SERVERS_LIST,
+    ADD_SERVER_BUTTON,
+    REMOVE_SERVER_BUTTON,
+    EDIT_BUTTON,
+
+    RIGHT_FIELD,
+    HOSTNAME_FIELD,
+    USERNAME_FIELD,
+    PASSWORD_FIELD,
+    CONNECT_BUTTON,
+    DISCONNECT_BUTTON,
+    CONNECTION_STATUS_LABEL,
+    SHELL_AREA
+}

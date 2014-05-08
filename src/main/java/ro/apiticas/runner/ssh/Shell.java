@@ -4,21 +4,31 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
 
-import javax.swing.JTextArea;
+import javax.swing.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Shell {
 
-    public Channel connect(String hostname, String username, String password, JTextArea textArea) {
+    private Channel channel;
 
-        Channel channel = null;
+    public Shell() {
+        channel = null;
+    }
 
+    public boolean isConnected() {
+        return channel != null && channel.isConnected();
+    }
+
+    public void connect(String hostname, String username, String password, JTextArea textArea) {
         try {
-            JSch jsch = new JSch();
-
-            Session session = null;
-            session = jsch.getSession(username, hostname, 22);
+            Session session = new JSch().getSession(username, hostname);
             session.setPassword(password);
             session.setConfig("StrictHostKeyChecking", "no");
             session.setUserInfo(new MyUserInfo());
@@ -27,17 +37,74 @@ public class Shell {
 
             channel = session.openChannel("shell");
             ((ChannelShell) channel).setPtyType("dumb");
-
-//            channel.setInputStream(System.in);
             channel.setInputStream(null);
-            channel.setOutputStream(new JTextAreaOutputStream(textArea));
+            channel.setOutputStream(appendNewLine(new JTextAreaOutputStream(textArea)));
+
             channel.connect(30000);
 
         } catch (Exception e) {
-            e.printStackTrace(new PrintWriter(new JTextAreaOutputStream(textArea), true));
+            PrintWriter printWriter = new PrintWriter(appendNewLine(new JTextAreaOutputStream(textArea)), true);
+            e.printStackTrace(printWriter);
+        }
+    }
+
+    public void disconnect() {
+        if (channel != null) {
+            channel.disconnect();
+        }
+    }
+
+    private static OutputStream appendNewLine(OutputStream outputStream) {
+        checkNotNull(outputStream, "Output stream is null");
+
+        try {
+            outputStream.write(System.getProperty("line.separator").getBytes());
+        } catch (IOException e) {
         }
 
-        return channel;
+        return outputStream;
+    }
+
+    private class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+
+        @Override
+        public String getPassword() {
+            return null;
+        }
+
+        @Override
+        public boolean promptYesNo(String message) {
+            Object[] options = {"yes", "no"};
+            int foo = JOptionPane.showOptionDialog(null, message, "Warning", JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+            return foo == 0;
+        }
+
+        @Override
+        public String getPassphrase() {
+            return null;
+        }
+
+        @Override
+        public boolean promptPassphrase(String message) {
+            return false;
+        }
+
+        @Override
+        public boolean promptPassword(String message) {
+            return false;
+        }
+
+        @Override
+        public void showMessage(String message) {
+            JOptionPane.showMessageDialog(null, message);
+        }
+
+        @Override
+        public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt,
+                                                  boolean[] echo) {
+            return null;
+        }
     }
 }
 
