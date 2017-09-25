@@ -1,7 +1,7 @@
-package ro.apiticas.runner.gui.data;
+package ro.b1nnar.projects.sshrunner.gui.data;
 
 import com.google.common.base.Objects;
-import ro.apiticas.runner.ssh.Shell;
+import ro.b1nnar.projects.sshrunner.ssh.Shell;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package ro.apiticas.runner.gui;
+package ro.b1nnar.projects.sshrunner.gui;
 
 import javax.swing.JFrame;
 

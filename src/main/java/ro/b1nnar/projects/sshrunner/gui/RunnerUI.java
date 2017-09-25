@@ -1,8 +1,8 @@
-package ro.apiticas.runner.gui;
+package ro.b1nnar.projects.sshrunner.gui;
 
-import ro.apiticas.runner.gui.data.ServerData;
-import ro.apiticas.runner.gui.listeners.ListenersWrapper;
-import ro.apiticas.runner.gui.utils.GuiUtils;
+import ro.b1nnar.projects.sshrunner.gui.data.ServerData;
+import ro.b1nnar.projects.sshrunner.gui.listeners.ListenersWrapper;
+import ro.b1nnar.projects.sshrunner.gui.utils.GuiUtils;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -20,18 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static ro.apiticas.runner.gui.UIComponent.CONNECTION_STATUS_LABEL;
-import static ro.apiticas.runner.gui.UIComponent.CONNECT_BUTTON;
-import static ro.apiticas.runner.gui.UIComponent.DISCONNECT_BUTTON;
-import static ro.apiticas.runner.gui.UIComponent.DOCUMENT_SOURCE;
-import static ro.apiticas.runner.gui.UIComponent.HOSTNAME_FIELD;
-import static ro.apiticas.runner.gui.UIComponent.MAIN_PANEL;
-import static ro.apiticas.runner.gui.UIComponent.PASSWORD_FIELD;
-import static ro.apiticas.runner.gui.UIComponent.SERVERS_LIST;
-import static ro.apiticas.runner.gui.UIComponent.SHELL_AREA;
-import static ro.apiticas.runner.gui.UIComponent.TABBED_PANEL;
-import static ro.apiticas.runner.gui.UIComponent.USERNAME_FIELD;
 
 public class RunnerUI {
 
@@ -71,16 +59,16 @@ public class RunnerUI {
         servers = new ArrayList<ServerData>();
 
         Map<UIComponent, JComponent> uiComponents = new HashMap<>();
-        uiComponents.put(MAIN_PANEL, mainPanel);
-        uiComponents.put(SERVERS_LIST, serversList);
-        uiComponents.put(TABBED_PANEL, tabbedPanel);
-        uiComponents.put(HOSTNAME_FIELD, hostnameField);
-        uiComponents.put(USERNAME_FIELD, usernameField);
-        uiComponents.put(PASSWORD_FIELD, passwordField);
-        uiComponents.put(CONNECT_BUTTON, connectButton);
-        uiComponents.put(DISCONNECT_BUTTON, disconnectButton);
-        uiComponents.put(CONNECTION_STATUS_LABEL, connectionStatusLabel);
-        uiComponents.put(SHELL_AREA, shellArea);
+        uiComponents.put(UIComponent.MAIN_PANEL, mainPanel);
+        uiComponents.put(UIComponent.SERVERS_LIST, serversList);
+        uiComponents.put(UIComponent.TABBED_PANEL, tabbedPanel);
+        uiComponents.put(UIComponent.HOSTNAME_FIELD, hostnameField);
+        uiComponents.put(UIComponent.USERNAME_FIELD, usernameField);
+        uiComponents.put(UIComponent.PASSWORD_FIELD, passwordField);
+        uiComponents.put(UIComponent.CONNECT_BUTTON, connectButton);
+        uiComponents.put(UIComponent.DISCONNECT_BUTTON, disconnectButton);
+        uiComponents.put(UIComponent.CONNECTION_STATUS_LABEL, connectionStatusLabel);
+        uiComponents.put(UIComponent.SHELL_AREA, shellArea);
 
         ListenersWrapper listenersWrapper = new ListenersWrapper(uiComponents, servers);
 
@@ -92,11 +80,11 @@ public class RunnerUI {
         disconnectButton.addActionListener(listenersWrapper.new DisconnectButtonActionListener());
         DocumentListener documentListener = listenersWrapper.new InputFieldsDocumentListener();
 
-        hostnameField.getDocument().putProperty(DOCUMENT_SOURCE, hostnameField);
+        hostnameField.getDocument().putProperty(UIComponent.DOCUMENT_SOURCE, hostnameField);
         hostnameField.getDocument().addDocumentListener(documentListener);
-        usernameField.getDocument().putProperty(DOCUMENT_SOURCE, usernameField);
+        usernameField.getDocument().putProperty(UIComponent.DOCUMENT_SOURCE, usernameField);
         usernameField.getDocument().addDocumentListener(documentListener);
-        passwordField.getDocument().putProperty(DOCUMENT_SOURCE, passwordField);
+        passwordField.getDocument().putProperty(UIComponent.DOCUMENT_SOURCE, passwordField);
         passwordField.getDocument().addDocumentListener(documentListener);
 
         serversList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

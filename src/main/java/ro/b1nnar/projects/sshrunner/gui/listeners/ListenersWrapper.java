@@ -1,8 +1,8 @@
-package ro.apiticas.runner.gui.listeners;
+package ro.b1nnar.projects.sshrunner.gui.listeners;
 
-import ro.apiticas.runner.gui.UIComponent;
-import ro.apiticas.runner.gui.data.ServerData;
-import ro.apiticas.runner.gui.utils.GuiUtils;
+import ro.b1nnar.projects.sshrunner.gui.UIComponent;
+import ro.b1nnar.projects.sshrunner.gui.data.ServerData;
+import ro.b1nnar.projects.sshrunner.gui.utils.GuiUtils;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -24,17 +24,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static ro.apiticas.runner.gui.UIComponent.CONNECTION_STATUS_LABEL;
-import static ro.apiticas.runner.gui.UIComponent.CONNECT_BUTTON;
-import static ro.apiticas.runner.gui.UIComponent.DISCONNECT_BUTTON;
-import static ro.apiticas.runner.gui.UIComponent.DOCUMENT_SOURCE;
-import static ro.apiticas.runner.gui.UIComponent.HOSTNAME_FIELD;
-import static ro.apiticas.runner.gui.UIComponent.MAIN_PANEL;
-import static ro.apiticas.runner.gui.UIComponent.PASSWORD_FIELD;
-import static ro.apiticas.runner.gui.UIComponent.SERVERS_LIST;
-import static ro.apiticas.runner.gui.UIComponent.SHELL_AREA;
-import static ro.apiticas.runner.gui.UIComponent.TABBED_PANEL;
-import static ro.apiticas.runner.gui.UIComponent.USERNAME_FIELD;
 
 public class ListenersWrapper {
 
@@ -50,8 +39,8 @@ public class ListenersWrapper {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JPanel mainPanel = (JPanel) uiComps.get(MAIN_PANEL);
-            JList serversList = (JList) uiComps.get(SERVERS_LIST);
+            JPanel mainPanel = (JPanel) uiComps.get(UIComponent.MAIN_PANEL);
+            JList serversList = (JList) uiComps.get(UIComponent.SERVERS_LIST);
 
             String newServerName = (String) JOptionPane.showInputDialog(mainPanel, "Set the name of the new server",
                     "New server", JOptionPane.QUESTION_MESSAGE, null, null, "New server " + servers.size());
@@ -75,8 +64,8 @@ public class ListenersWrapper {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JPanel mainPanel = (JPanel) uiComps.get(MAIN_PANEL);
-            JList serversList = (JList) uiComps.get(SERVERS_LIST);
+            JPanel mainPanel = (JPanel) uiComps.get(UIComponent.MAIN_PANEL);
+            JList serversList = (JList) uiComps.get(UIComponent.SERVERS_LIST);
 
             String serverToDelete = (String) serversList.getSelectedValue();
 
@@ -103,8 +92,8 @@ public class ListenersWrapper {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JPanel mainPanel = (JPanel) uiComps.get(MAIN_PANEL);
-            JList serversList = (JList) uiComps.get(SERVERS_LIST);
+            JPanel mainPanel = (JPanel) uiComps.get(UIComponent.MAIN_PANEL);
+            JList serversList = (JList) uiComps.get(UIComponent.SERVERS_LIST);
 
             String serverToEdit = (String) serversList.getSelectedValue();
 
@@ -135,14 +124,14 @@ public class ListenersWrapper {
 
         @Override
         public void valueChanged(ListSelectionEvent event) {
-            JList serversList = (JList) uiComps.get(SERVERS_LIST);
-            JTabbedPane tabbedPanel = (JTabbedPane) uiComps.get(TABBED_PANEL);
-            JTextField hostnameField = (JTextField) uiComps.get(HOSTNAME_FIELD);
-            JTextField usernameField = (JTextField) uiComps.get(USERNAME_FIELD);
-            JTextField passwordField = (JTextField) uiComps.get(PASSWORD_FIELD);
-            JButton connectButton = (JButton) uiComps.get(CONNECT_BUTTON);
-            JButton disconnectButton = (JButton) uiComps.get(DISCONNECT_BUTTON);
-            JLabel connectionStatusLabel = (JLabel) uiComps.get(CONNECTION_STATUS_LABEL);
+            JList serversList = (JList) uiComps.get(UIComponent.SERVERS_LIST);
+            JTabbedPane tabbedPanel = (JTabbedPane) uiComps.get(UIComponent.TABBED_PANEL);
+            JTextField hostnameField = (JTextField) uiComps.get(UIComponent.HOSTNAME_FIELD);
+            JTextField usernameField = (JTextField) uiComps.get(UIComponent.USERNAME_FIELD);
+            JTextField passwordField = (JTextField) uiComps.get(UIComponent.PASSWORD_FIELD);
+            JButton connectButton = (JButton) uiComps.get(UIComponent.CONNECT_BUTTON);
+            JButton disconnectButton = (JButton) uiComps.get(UIComponent.DISCONNECT_BUTTON);
+            JLabel connectionStatusLabel = (JLabel) uiComps.get(UIComponent.CONNECTION_STATUS_LABEL);
 
             String serverName = (String) serversList.getSelectedValue();
             if (serverName == null) {
@@ -155,7 +144,7 @@ public class ListenersWrapper {
             hostnameField.setText(server.getHostname());
             usernameField.setText(server.getUsername());
             passwordField.setText(server.getPassword());
-            ((JTextArea) uiComps.get(SHELL_AREA)).setText(GuiUtils.shellLinesToText(server.getShellLines()));
+            ((JTextArea) uiComps.get(UIComponent.SHELL_AREA)).setText(GuiUtils.shellLinesToText(server.getShellLines()));
             connectButton.setEnabled(!server.getShell().isConnected());
             disconnectButton.setEnabled(server.getShell().isConnected());
             connectionStatusLabel.setText(server.getShell().isConnected() ? "Connected" : "Disconnected");
@@ -166,16 +155,16 @@ public class ListenersWrapper {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            JList serversList = (JList) uiComps.get(SERVERS_LIST);
-            JButton connectButton = (JButton) uiComps.get(CONNECT_BUTTON);
-            JButton disconnectButton = (JButton) uiComps.get(DISCONNECT_BUTTON);
-            JLabel connectionStatusLabel = (JLabel) uiComps.get(CONNECTION_STATUS_LABEL);
+            JList serversList = (JList) uiComps.get(UIComponent.SERVERS_LIST);
+            JButton connectButton = (JButton) uiComps.get(UIComponent.CONNECT_BUTTON);
+            JButton disconnectButton = (JButton) uiComps.get(UIComponent.DISCONNECT_BUTTON);
+            JLabel connectionStatusLabel = (JLabel) uiComps.get(UIComponent.CONNECTION_STATUS_LABEL);
 
             ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
 
             selectedServer.getShell().connect(
                     selectedServer.getHostname(), selectedServer.getUsername(), selectedServer.getPassword(),
-                    (JTextArea) uiComps.get(SHELL_AREA)
+                    (JTextArea) uiComps.get(UIComponent.SHELL_AREA)
             );
 
             try {
@@ -184,7 +173,7 @@ public class ListenersWrapper {
                 e.printStackTrace();
             }
 
-            selectedServer.setShellLines(GuiUtils.textToShellLines(((JTextArea) uiComps.get(SHELL_AREA)).
+            selectedServer.setShellLines(GuiUtils.textToShellLines(((JTextArea) uiComps.get(UIComponent.SHELL_AREA)).
                     getText()));
 
             connectButton.setEnabled(!selectedServer.getShell().isConnected());
@@ -199,10 +188,10 @@ public class ListenersWrapper {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            JList serversList = (JList) uiComps.get(SERVERS_LIST);
-            JButton connectButton = (JButton) uiComps.get(CONNECT_BUTTON);
-            JButton disconnectButton = (JButton) uiComps.get(DISCONNECT_BUTTON);
-            JLabel connectionStatusLabel = (JLabel) uiComps.get(CONNECTION_STATUS_LABEL);
+            JList serversList = (JList) uiComps.get(UIComponent.SERVERS_LIST);
+            JButton connectButton = (JButton) uiComps.get(UIComponent.CONNECT_BUTTON);
+            JButton disconnectButton = (JButton) uiComps.get(UIComponent.DISCONNECT_BUTTON);
+            JLabel connectionStatusLabel = (JLabel) uiComps.get(UIComponent.CONNECTION_STATUS_LABEL);
             ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
 
             selectedServer.getShell().disconnect();
@@ -240,12 +229,12 @@ public class ListenersWrapper {
         private void updateModel(DocumentEvent documentEvent) {
             checkNotNull(documentEvent, "Document event is null");
 
-            JList serversList = (JList) uiComps.get(SERVERS_LIST);
-            JTextField hostnameField = (JTextField) uiComps.get(HOSTNAME_FIELD);
-            JTextField usernameField = (JTextField) uiComps.get(USERNAME_FIELD);
-            JTextField passwordField = (JTextField) uiComps.get(PASSWORD_FIELD);
+            JList serversList = (JList) uiComps.get(UIComponent.SERVERS_LIST);
+            JTextField hostnameField = (JTextField) uiComps.get(UIComponent.HOSTNAME_FIELD);
+            JTextField usernameField = (JTextField) uiComps.get(UIComponent.USERNAME_FIELD);
+            JTextField passwordField = (JTextField) uiComps.get(UIComponent.PASSWORD_FIELD);
 
-            JTextField textField = (JTextField) documentEvent.getDocument().getProperty(DOCUMENT_SOURCE);
+            JTextField textField = (JTextField) documentEvent.getDocument().getProperty(UIComponent.DOCUMENT_SOURCE);
             ServerData selectedServer = GuiUtils.getServerByName(servers, (String) serversList.getSelectedValue());
             String newValue = textField.getText();
 

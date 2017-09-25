@@ -1,4 +1,4 @@
-package ro.apiticas.runner.ssh;
+package ro.b1nnar.projects.sshrunner.ssh;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelShell;

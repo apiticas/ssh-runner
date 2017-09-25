@@ -1,6 +1,6 @@
-package ro.apiticas.runner.gui.utils;
+package ro.b1nnar.projects.sshrunner.gui.utils;
 
-import ro.apiticas.runner.gui.data.ServerData;
+import ro.b1nnar.projects.sshrunner.gui.data.ServerData;
 
 import java.util.Arrays;
 import java.util.List;

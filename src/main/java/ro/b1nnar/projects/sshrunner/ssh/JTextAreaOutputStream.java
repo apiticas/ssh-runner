@@ -1,4 +1,4 @@
-package ro.apiticas.runner.ssh;
+package ro.b1nnar.projects.sshrunner.ssh;
 
 import javax.swing.JTextArea;
 import java.io.IOException;
